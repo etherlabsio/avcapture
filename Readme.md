@@ -11,55 +11,59 @@
 ### start-recording
 
 - POST: <http://IP:3080/start_recording>
-- "ffmpeg_config" and "chrome_config" are optional. If it is specified, the original arguments to these applications will be replaced completely with the provided one. User has to take care on the arguments passed for proper functionality.
+- "ffmpeg:options" and "chrome:options" are optional. If it is specified, the original arguments to these applications will be replaced completely with the provided one. User has to take care on the arguments passed for proper functionality.
 
 ```json
 {
-    "url": "<https://www.youtube.com/watch?v=Bey4XXJAqS8>",
-    "outparams": [
-        [ " -hls_time", "6" ],
-        [ "-hls_playlist_type", "event" ],
-        [ "-hls_segment_filename", "/work/out%04d.ts" ],
-        [ "/work/play.m3u8" ]
-    ],
-    "ffmpeg_config": [
-        [ "-y", "" ],
-        [ "-v", "info" ],
-        [ "-f", "x11grab" ],
-        [ "-draw_mouse", "0" ],
-        [ "-r", "24" ],
-        [ "-s", "1280x720" ],
-        [ "-thread_queue_size", "4096" ],
-        [ "-i", ":99.0+0,0" ],
-        [ "-f", "pulse" ],
-        [ "-thread_queue_size", "4096" ],
-        [ "-i", "default" ],
-        [ "-acodec", "aac" ],
-        [ "-strict", "-2" ],
-        [ "-ar", "48000" ],
-        [ "-c:v", "libx264" ],
-        [ "-x264opts", "no-scenecut" ],
-        [ "-preset", "veryfast" ],
-        [ "-profile:v", "main" ],
-        [ "-level", "3.1" ],
-        [ "-pix_fmt", "yuv420p" ],
-        [ "-r", "24" ],
-        [ "-crf", "25" ],
-        [ "-g", "48" ],
-        [ "-keyint_min", "48" ],
-        [ "-force_key_frames", "\"expr:gte(t,n_forced*2)\"" ],
-        [ "-tune", "zerolatency" ],
-        [ "-b:v", "3600k" ],
-        [ "-maxrate", "4000k" ],
-        [ "-bufsize", "5200k" ]
-    ],
-    "chrome_config": [
-        "--enable-logging=stderr",
-        "--autoplay-policy=no-user-gesture-required",
-        "--no-sandbox",
-        "--start-maximized --window-position=100,300",
-        "--window-size=1280,720"
-    ]
+    "ffmpeg": {
+        "params": [
+            [" -hls_time", "6"],
+            ["-hls_playlist_type", "event"],
+            ["-hls_segment_filename", "/work/out%04d.ts"],
+            ["/work/play.m3u8"]
+        ],
+        "options": [
+            ["-y", ""],
+            ["-v", "info"],
+            ["-f", "x11grab"],
+            ["-draw_mouse", "0"],
+            ["-r", "24"],
+            ["-s", "1280x720"],
+            ["-thread_queue_size", "4096"],
+            ["-i", ":99.0+0,0"],
+            ["-f", "pulse"],
+            ["-thread_queue_size", "4096"],
+            ["-i", "default"],
+            ["-acodec", "aac"],
+            ["-strict", "-2"],
+            ["-ar", "48000"],
+            ["-c:v", "libx264"],
+            ["-x264opts", "no-scenecut"],
+            ["-preset", "veryfast"],
+            ["-profile:v", "main"],
+            ["-level", "3.1"],
+            ["-pix_fmt", "yuv420p"],
+            ["-r", "24"],
+            ["-crf", "25"],
+            ["-g", "48"],
+            ["-keyint_min", "48"],
+            ["-force_key_frames", "\"expr:gte(t,n_forced*2)\""],
+            ["-tune", "zerolatency"],
+            ["-b:v", "3600k"],
+            ["-maxrate", "4000k"],
+            ["-bufsize", "5200k"]
+        ]
+    },
+    "chrome": {
+        "url": "<https://www.youtube.com/watch?v=Bey4XXJAqS8>",
+        "options": [
+            "--enable-logging=stderr",
+            "--autoplay-policy=no-user-gesture-required",
+            "--no-sandbox",
+            "--start-maximized --window-position=100,300",
+            "--window-size=1280,720"
+        ]
+    }
 }
 ```
 
@@ -79,24 +83,24 @@ ENV AVCAPTURE_PORT=":3090"
 
 ## Output
 
-User is supposed to map a directory from host system to the docker image. Along with this, user has to provide the output path (as part of ‘/start_recording’ api) which will direct the output generated the corresponding directory.
+User is supposed to map a directory from host system to the docker image. Along with this, user has to provide the output path (as part of `/start_recording` api) which will direct the output generated the corresponding directory.
 
 ## Architecture
 
 The docker image contains google chrome, ffmpeg and wrapper application.
 As part of startup, the wrapper application will configure the system to run chrome browser on the given display id and to capture audio using pulseaudio.
-Once the ‘/start_recording’ is received, chrome will be started to render the ‘url’ provided. An instance of ffmpeg will be started to capture the display. The system is tested for the config file provided.
+Once the `/start_recording` is received, chrome will be started to render the `url` provided. An instance of ffmpeg will be started to capture the display.
 
 ## Version Info
 
-| Component | Version | Details |
-| --- | --- | --- |
-| Base docker image | ubuntu:16.04 | |
-| ffmpeg | 4.0.2 | <https://ffmpeg.org/releases/ffmpeg-4.0.2.tar.bz2> |
-| libx264 | latest | git://git.videolan.org/x264.git |
-| nasm | 2.13.03 | <https://www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.bz2> |
-| Google chrome | Latest stable | deb <http://dl.google.com/linux/chrome/deb/> stable main |
-| pulseaudio | 8.0 |
+| Component         | Version       | Details                                                                   |
+| ----------------- | ------------- | ------------------------------------------------------------------------- |
+| Base docker image | ubuntu:16.04  |                                                                           |
+| ffmpeg            | 4.0.2         | <https://ffmpeg.org/releases/ffmpeg-4.0.2.tar.bz2>                        |
+| libx264           | latest        | git://git.videolan.org/x264.git                                           |
+| nasm              | 2.13.03       | <https://www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.bz2> |
+| Google chrome     | Latest stable | deb <http://dl.google.com/linux/chrome/deb/> stable main                  |
+| pulseaudio        | 8.0           |
 
 ## Known limitations
 
