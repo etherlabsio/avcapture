@@ -58,9 +58,10 @@ RUN echo 'deb http://dl.google.com/linux/chrome/deb/ stable main' >>  /etc/apt/s
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-COPY --from=gobuilder /dist bin/
 COPY ./run-chrome.sh run-chrome.sh
 RUN /bin/sh run-chrome.sh
+
+COPY --from=gobuilder /dist bin/
 
 ENV DISPLAY=:99
 

@@ -34,9 +34,7 @@ type StartRecordingResponse struct {
 	errResponse
 }
 
-type StopRecordingRequest struct {
-	errResponse
-}
+type StopRecordingRequest struct{}
 
 // StopRecordingResponse is the response for the stop recording recording request
 type StopRecordingResponse struct {
@@ -78,7 +76,7 @@ func (svc *service) Start(ctx context.Context, req StartRecordingRequest) (resp 
 		return resp
 	}
 
-	var ffmpegCmd commander.Runnable
+	var ffmpegCmd Runnable
 	{
 		ffmpegBuilder := ffmpeg.NewBuilder()
 		ffmpegBuilder = ffmpegBuilder.WithOptions(req.FFmpeg.Options...)
@@ -91,7 +89,7 @@ func (svc *service) Start(ctx context.Context, req StartRecordingRequest) (resp 
 		ffmpegCmd = commander.New(args...)
 	}
 
-	var chromeCmd commander.Runnable
+	var chromeCmd Runnable
 	{
 		chromeBuilder := chrome.NewBuilder()
 		chromeBuilder = chromeBuilder.WithOptions(req.Chrome.Options...)
