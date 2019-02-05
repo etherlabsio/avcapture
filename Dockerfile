@@ -14,25 +14,28 @@ RUN cd ~/ffmpeg_sources && wget https://www.nasm.us/pub/nasm/releasebuilds/2.13.
     cp ffmpeg /usr/bin
 
 FROM golang AS gobuilder
+
 # Download and install the latest release of dep
 RUN go get github.com/golang/dep/cmd/dep
 
 # Copy the code from the host and compile it
-WORKDIR $HOME/etherlabsio/avcapture
+WORKDIR $GOPATH/src/github.com/etherlabsio/avcapture
 
-ADD app.go app.go
-ADD main.go main.go
-ADD request_handler.go request_handler.go
+# add Gopkg.toml and Gopkg.lock
+ADD Gopkg.toml Gopkg.toml
+ADD Gopkg.lock Gopkg.lock
+
+# --vendor-only is used to restrict dep from scanning source code
+# and finding dependencies
+RUN dep ensure --vendor-only -v
 
 # ADD . . blows up the build cache. Avoid using it when possible and predictable.
-COPY pkg pkg
+COPY cmd cmd
 COPY internal internal
 
-ARG cmd
 ENV CGO_ENABLED 0
-
-RUN go mod init github.com/etherlabsio/avcapture
-RUN go build -tags debug -o /dist/server -v -i -ldflags="-s -w" 
+RUN dep ensure -v -vendor-only
+RUN go build -tags debug -o /dist/server -v -i -ldflags="-s -w" ./cmd/avcapture
 
 FROM ubuntu:16.04
 
@@ -42,20 +45,24 @@ RUN apt-get update && apt-get -y install  --no-install-recommends libass5   libf
     rm -rf /var/lib/apt/lists/* 
 COPY --from=builder /root/bin/ffmpeg /usr/bin/
 
+WORKDIR /app
+
 # Install google chrome
-WORKDIR /var/recorder
-COPY ./run-chrome.sh run-chrome.sh
 RUN echo 'deb http://dl.google.com/linux/chrome/deb/ stable main' >>  /etc/apt/sources.list.d/dl_google_com_linux_chrome_deb.list && \
     apt-get update && \
-	apt-get install -y pulseaudio xvfb wget gnupg htop --no-install-recommends && \
-	wget https://dl.google.com/linux/linux_signing_key.pub --no-check-certificate && \
-	apt-key add linux_signing_key.pub && \
-	apt-get update && \
-	apt-get install -y google-chrome-stable --no-install-recommends && \
-	apt-get clean && \
-	rm -rf /var/lib/apt/lists/* && \
-    /bin/sh run-chrome.sh
+    apt-get install -y pulseaudio xvfb wget gnupg htop --no-install-recommends && \
+    wget https://dl.google.com/linux/linux_signing_key.pub --no-check-certificate && \
+    apt-key add linux_signing_key.pub && \
+    apt-get update && \
+    apt-get install -y google-chrome-stable --no-install-recommends && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY --from=gobuilder /dist bin/
+COPY ./run-chrome.sh run-chrome.sh
+RUN /bin/sh run-chrome.sh
+
+ENV DISPLAY=:99
+
 ## Hack to remove default  browser check in chrome
 ENTRYPOINT ["bin/server"]
