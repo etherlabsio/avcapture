@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 
 	"github.com/oklog/run"
@@ -49,16 +50,9 @@ func init() {
 }
 
 func setupAVCaptureDevices() error {
-	// if runtime.GOOS != "linux" {
-	// 	return nil
-	// }
-	fmt.Println("exec setup")
-	commander.Exec("pulseaudio -D --exit-idle-time=-1")
-	commander.Exec("pacmd load-module module-virtual-sink sink_name=v1")
-	commander.Exec("pacmd load-module module-virtual-source source_name=VirtualInput")
-	commander.Exec("pacmd set-default-sink v1")
-	commander.Exec("pacmd set-default-source VirtualInput")
-	commander.Exec("Xvfb :99 -screen 0 1280x720x16 &> xvfb.log &")
+	if runtime.GOOS != "linux" {
+		return nil
+	}
 	return errors.Do(func() error {
 		return commander.Exec("pulseaudio -D --exit-idle-time=-1")
 	}).Do(func() error {

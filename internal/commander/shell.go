@@ -18,40 +18,47 @@ type Runnable interface {
 }
 
 // Exec executes a shell command
-func Exec(arg string) error {
-	str := buildExecutableStr(arg)
-	cmd := exec.Command(str)
+func Exec(args ...string) error {
+	cmd := buildCommand(args...)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return errors.WithMessagef(err, "exec: failed to pipe RunnableCmd %s", arg)
+		return errors.WithMessagef(err, "exec: failed to pipe RunnableCmd: %v", cmd.Args)
 	}
 	buf := new(bytes.Buffer)
-	buf.ReadFrom(stdout)
-	fmt.Println("executing")
 	err = errors.
 		Do(cmd.Start).
+		Do(func() error {
+			_, err := buf.ReadFrom(stdout)
+			return err
+		}).
 		Do(cmd.Wait).
 		Err()
-	return errors.WithMessagef(err, "exec: failed to execute RunnableCmd %s", arg)
+	fmt.Println(buf.String())
+	return errors.WithMessagef(err, "exec: failed to execute RunnableCmd: %v", cmd.Args)
 }
 
 // RunnableCmd returns a runnable Shell command
 type RunnableCmd struct {
-	args string
-	cmd  *exec.Cmd
+	cmd *exec.Cmd
 }
 
 func New(args ...string) *RunnableCmd {
-	execStr := buildExecutableStr(args...)
-	cmd := exec.Command(execStr)
+	cmd := buildCommand(args...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	return &RunnableCmd{execStr, cmd}
+	return &RunnableCmd{cmd}
+}
+
+func (s *RunnableCmd) Args() string {
+	if s.cmd == nil {
+		return ""
+	}
+	return strings.Join(s.cmd.Args, " ")
 }
 
 func (s *RunnableCmd) Start() error {
-	return errors.WithMessage(s.cmd.Start(), "failed to start RunnableCmd: "+s.args)
+	return errors.WithMessage(s.cmd.Start(), "failed to start RunnableCmd: "+s.Args())
 }
 
 func (s *RunnableCmd) Stop() error {
@@ -72,8 +79,8 @@ func (s *RunnableCmd) Stop() error {
 	return stop(pgid, syscall.SIGTERM)
 }
 
-func buildExecutableStr(args ...string) string {
-	args = append([]string{"sh", "-c"}, args...)
+func buildCommand(args ...string) *exec.Cmd {
 	fmt.Println("exec: ", args)
-	return strings.Join(args, " ")
+	str := strings.Join(args, " ")
+	return exec.Command("sh", "-c", str)
 }
