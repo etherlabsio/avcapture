@@ -1,9 +1,11 @@
-# Avcapture Docker Container
+# avcapture
+
+avcapture allows you to run a that captures the content and pipes the audio/video for any URL to FFmpeg for encoding including generating a live playlist.
 
 ## Build and Run
 
 - **Build**: `docker build -f ./Dockerfile -t <imagename>:<tag> .`
-- **Run**: `docker run -it --net test -v <directory to store output>:<mapped directory inside docker container> --name ffmpegchromerecorder -p 8080:8080 <imagename>:<tag>`
+- **Run**: `docker run -it --net test -v <directory to store output>:<mapped directory inside docker container> --name avcapture -p 8080:8080 <imagename>:<tag>`
 
 ## API
 
@@ -105,5 +107,5 @@ Once the `/start_recording` is received, chrome will be started to render the `u
 ## Known limitations
 
 - The solution is validated on ubuntu 16.04 (with pulseaudio v8.0). Ubuntu 18.04 contains pulseaudio 11.1 which breaks a few features. With pulseaudio 11.1,
-  - To run pulseaudio as daemon on root, `--system` has to be mentioned.
-  - User will not be able to add modules to pulseaudio.
+- To run pulseaudio as daemon on root, `--system` has to be mentioned.
+- User will not be able to add modules to pulseaudio.
