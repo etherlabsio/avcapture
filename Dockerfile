@@ -14,6 +14,8 @@ RUN cd ~/ffmpeg_sources && wget https://www.nasm.us/pub/nasm/releasebuilds/2.13.
 
 FROM golang AS go-builder
 
+WORKDIR $GOPATH/src/app
+
 # Force the go compiler to use modules
 ENV GO111MODULE=on
 
@@ -33,9 +35,7 @@ COPY cmd cmd
 COPY internal internal
 COPY pkg pkg
 
-ENV CGO_ENABLED 0
-RUN dep ensure -v -vendor-only
-RUN go build -tags debug -o /dist/avcapture-server -v -i -ldflags="-s -w" ./cmd/avcapture-server
+RUN CGO_ENABLED=0 go build -tags debug -o /dist/avcapture-server -v -i -ldflags="-s -w" ./cmd/avcapture-server
 
 FROM ubuntu:16.04
 
@@ -43,7 +43,7 @@ WORKDIR /app
 
 # install ffmpeg dependencies
 RUN apt-get update && \
-    apt-get -y install  --no-install-recommends libass5   libfreetype6  libsdl2-2.0-0 libva1   libvdpau1   libxcb1   libxcb-shm0   libxcb-xfixes0   zlib1g libx264-148 libxv1 libva-drm1 libva-x11-1 libxcb-shape0
+    apt-get -y install --no-install-recommends libass5 libfreetype6 libsdl2-2.0-0 libva1 libvdpau1 libxcb1 libxcb-shm0 libxcb-xfixes0 zlib1g libx264-148 libxv1 libva-drm1 libva-x11-1 libxcb-shape0
 
 # Install google chrome
 RUN echo 'deb http://dl.google.com/linux/chrome/deb/ stable main' >>  /etc/apt/sources.list.d/dl_google_com_linux_chrome_deb.list && \
