@@ -44,6 +44,13 @@ func NewBuilder() Builder {
 	}
 }
 
+func (b Builder) WithExecPath(execPath string) Builder {
+	if execPath != "" {
+		b.execPath = execPath
+	}
+	return b
+}
+
 func (b Builder) WithOptions(options ...[]string) Builder {
 	if len(options) != 0 {
 		b.options = options
