@@ -44,6 +44,7 @@ func NewBuilder() Builder {
 	}
 }
 
+//WithExecPath helps to set custom path to ffmpeg executable
 func (b Builder) WithExecPath(execPath string) Builder {
 	if execPath != "" {
 		b.execPath = execPath
