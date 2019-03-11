@@ -9,7 +9,7 @@ type Builder struct {
 
 func NewBuilder() Builder {
 	return Builder{
-		execPath: "/usr/bin/ffmpeg",
+		execPath: "/usr/local/bin/ffmpeg",
 		options: [][]string{
 			{"-y", ""},
 			{"-v", "info"},
