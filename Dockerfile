@@ -48,8 +48,6 @@ RUN /bin/sh run-chrome.sh
 
 ENV DISPLAY=:99
 
-
-#COPY --from=ffmpeg-builder /root/bin/ffmpeg /usr/bin/
 COPY --from=go-builder /dist /bin/
 
 ## Hack to remove default  browser check in chrome
