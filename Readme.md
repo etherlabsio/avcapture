@@ -18,7 +18,7 @@ avcapture allows you to run a that captures the content and pipes the audio/vide
 {
   "ffmpeg": {
     "params": [
-      [" -hls_time", "6"],
+      ["-hls_time", "6"],
       ["-hls_playlist_type", "event"],
       ["-hls_segment_filename", "/work/out%04d.ts"],
       ["/work/play.m3u8"]

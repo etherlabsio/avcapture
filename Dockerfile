@@ -1,4 +1,3 @@
-
 FROM golang AS go-builder
 
 WORKDIR $GOPATH/src/app
@@ -22,9 +21,9 @@ COPY cmd cmd
 COPY internal internal
 COPY pkg pkg
 
-RUN CGO_ENABLED=0 go build -tags debug -o /dist/avcapture-server -v -i -ldflags="-s -w" ./cmd/avcapture-server
+RUN CGO_ENABLED=0 go build -tags debug -o /dist/server -v -i -ldflags="-s -w" ./cmd/server
 
-FROM etherlabsio/ffmpeg-avcapture:latest
+FROM etherlabsio/ffmpeg:latest
 
 WORKDIR /app
 
@@ -51,4 +50,4 @@ ENV DISPLAY=:99
 COPY --from=go-builder /dist /bin/
 
 ## Hack to remove default  browser check in chrome
-ENTRYPOINT ["/bin/avcapture-server"]
+ENTRYPOINT ["/bin/server"]
