@@ -24,7 +24,7 @@ COPY pkg pkg
 
 RUN CGO_ENABLED=0 go build -tags debug -o /dist/avcapture-server -v -i -ldflags="-s -w" ./cmd/avcapture-server
 
-FROM ffmpeg-ubuntu16.04:latest
+FROM etherlabsio/ffmpeg-avcapture:latest
 
 WORKDIR /app
 

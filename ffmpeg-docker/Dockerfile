@@ -74,11 +74,8 @@ RUN \
         --disable-doc \
         --disable-ffplay \
         --disable-avresample \
-        --enable-shared \
         --disable-libopencore-amrnb \
         --disable-libopencore-amrwb \
-        --enable-gpl \
-        --enable-libxcb \
         --disable-libass \
         --disable-libfreetype \
         --disable-libvidstab \
@@ -90,16 +87,20 @@ RUN \
         --disable-libvpx \
         --disable-libx265 \
         --disable-libxvid \
-        --enable-libx264 \
         --disable-nonfree \
         --disable-openssl \
         --disable-libfdk_aac \
         --disable-libkvazaar \
-        --disable-libaom --extra-libs=-lpthread \
+        --disable-libaom \
+        --disable-version3 \
+        --enable-shared \
+        --enable-gpl \
+        --enable-libxcb \
+        --enable-libx264 \
         --enable-postproc \
         --enable-small \
-        --enable-version3 \
         --enable-libpulse \
+        --extra-libs=-lpthread \
         --extra-cflags="-I${PREFIX}/include" \
         --extra-ldflags="-L${PREFIX}/lib" \
         --extra-libs=-ldl \
