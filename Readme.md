@@ -18,7 +18,7 @@ avcapture allows you to run a that captures the content and pipes the audio/vide
 {
   "ffmpeg": {
     "params": [
-      [" -hls_time", "6"],
+      ["-hls_time", "6"],
       ["-hls_playlist_type", "event"],
       ["-hls_segment_filename", "/work/out%04d.ts"],
       ["/work/play.m3u8"]
@@ -98,11 +98,11 @@ Once the `/start_recording` is received, chrome will be started to render the `u
 | Component         | Version       | Details                                                                   |
 | ----------------- | ------------- | ------------------------------------------------------------------------- |
 | Base docker image | ubuntu:16.04  |                                                                           |
-| ffmpeg            | 4.0.2         | <https://github.com/etherlabsio/FFmpeg/archive/n4.0.2.tar.gz>                        |
+| ffmpeg            | 4.1           | <https://github.com/etherlabsio/FFmpeg/archive/n4.1.tar.gz>               |
 | libx264           | latest        | git://git.videolan.org/x264.git                                           |
 | nasm              | 2.13.03       | <https://www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.bz2> |
 | Google chrome     | Latest stable | deb <http://dl.google.com/linux/chrome/deb/> stable main                  |
-| pulseaudio        | 8.0           | 
+| pulseaudio        | 8.0           |                                                                           |
 
 ## Known limitations
 

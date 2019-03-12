@@ -1,17 +1,3 @@
-FROM ubuntu:16.04 as ffmpeg-builder
-
-RUN apt-get update && apt-get -y install   autoconf   automake   build-essential   cmake   git-core   libass-dev   libfreetype6-dev   libsdl2-dev   libtool   libva-dev   libvdpau-dev   libxcb1-dev   libxcb-shm0-dev   libxcb-xfixes0-dev   pkg-config   texinfo   wget   zlib1g-dev yasm libx264-dev
-RUN mkdir -p ~/ffmpeg_sources ~/bin
-
-RUN cd ~/ffmpeg_sources && wget https://www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.bz2 && tar xjvf nasm-2.13.03.tar.bz2 && cd nasm-2.13.03 && ./autogen.sh && PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" && make && make install && \
-    cd ~/ffmpeg_sources && wget -O ffmpeg-snapshot.tar.bz2 https://ffmpeg.org/releases/ffmpeg-4.0.2.tar.bz2 && tar xjvf ffmpeg-snapshot.tar.bz2 && cd ffmpeg-4.0.2 && \
-    export BUILDDIR=$HOME &&  export PATH=$PATH:/root/bin/ && \
-    cd ~/ffmpeg_sources &&  git clone git://git.videolan.org/x264.git && cd x264 && ./configure --prefix="$BUILDDIR" --enable-pic && make && make install && \
-    cd ../ffmpeg-4.0.2/ && \
-    PKG_CONFIG_PATH="$BUILDDIR/lib/pkgconfig" ./configure --prefix="$BUILDDIR" --extra-cflags="-I$BUILDDIR/include" --extra-ldflags="-L$BUILDDIR/lib -ldl" --bindir="$HOME/bin"  --enable-gpl --enable-libx264  --disable-libvorbis --enable-libpulse && make && make install && \
-    apt-get clean && \
-    cp ffmpeg /usr/bin
-
 FROM golang AS go-builder
 
 WORKDIR $GOPATH/src/app
@@ -35,9 +21,9 @@ COPY cmd cmd
 COPY internal internal
 COPY pkg pkg
 
-RUN CGO_ENABLED=0 go build -tags debug -o /dist/avcapture-server -v -i -ldflags="-s -w" ./cmd/avcapture-server
+RUN CGO_ENABLED=0 go build -tags debug -o /dist/server -v -i -ldflags="-s -w" ./cmd/server
 
-FROM ubuntu:16.04
+FROM etherlabsio/ffmpeg:latest
 
 WORKDIR /app
 
@@ -61,8 +47,7 @@ RUN /bin/sh run-chrome.sh
 
 ENV DISPLAY=:99
 
-COPY --from=ffmpeg-builder /root/bin/ffmpeg /usr/bin/
 COPY --from=go-builder /dist /bin/
 
 ## Hack to remove default  browser check in chrome
-ENTRYPOINT ["/bin/avcapture-server"]
+ENTRYPOINT ["/bin/server"]
