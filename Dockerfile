@@ -23,7 +23,7 @@ COPY pkg pkg
 
 RUN CGO_ENABLED=0 go build -tags debug -o /dist/server -v -i -ldflags="-s -w" ./cmd/server
 
-FROM etherlabsio/ffmpeg:staging
+FROM etherlabsio/ffmpeg:4.0.2
 
 WORKDIR /app
 
