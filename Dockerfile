@@ -23,13 +23,9 @@ COPY pkg pkg
 
 RUN CGO_ENABLED=0 go build -tags debug -o /dist/server -v -i -ldflags="-s -w" ./cmd/server
 
-FROM etherlabsio/ffmpeg:latest
+FROM etherlabsio/ffmpeg:4.0.2
 
 WORKDIR /app
-
-# install ffmpeg dependencies
-RUN apt-get update && \
-    apt-get -y install --no-install-recommends libass5 libfreetype6 libsdl2-2.0-0 libva1 libvdpau1 libxcb1 libxcb-shm0 libxcb-xfixes0 zlib1g libx264-148 libxv1 libva-drm1 libva-x11-1 libxcb-shape0
 
 # Install google chrome
 RUN echo 'deb http://dl.google.com/linux/chrome/deb/ stable main' >>  /etc/apt/sources.list.d/dl_google_com_linux_chrome_deb.list && \
