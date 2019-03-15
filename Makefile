@@ -1,5 +1,5 @@
 CONTAINER_IMAGE=etherlabsio/avcapture
-CONTAINER_TAG=staging
+CONTAINER_TAG=latest
 
 build:
 	@docker build -t ${CONTAINER_IMAGE}:${CONTAINER_TAG} .
