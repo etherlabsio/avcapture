@@ -38,9 +38,8 @@ RUN echo 'deb http://dl.google.com/linux/chrome/deb/ stable main' >>  /etc/apt/s
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN wget https://s3.amazonaws.com/io.etherlabs.test/packages/ubuntu16.04.tgz && tar -xzf ubuntu16.04.tgz && mv bin/ffmpeg /usr/local/bin && mv lib/* /usr/local/lib/ && rm ubuntu16.04.tgz
-
 COPY scripts/run-chrome.sh run-chrome.sh
+COPY scripts/start-server.sh start-server.sh
 RUN /bin/sh run-chrome.sh
 
 ENV DISPLAY=:99
@@ -48,4 +47,4 @@ ENV DISPLAY=:99
 COPY --from=go-builder /dist /bin/
 ENV         LD_LIBRARY_PATH=/usr/local/lib
 ## Hack to remove default  browser check in chrome
-ENTRYPOINT ["/bin/server"]
+ENTRYPOINT ["/app/start-server.sh"]
