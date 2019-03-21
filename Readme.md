@@ -1,11 +1,13 @@
 # avcapture
 
-avcapture allows you to run a that captures the content and pipes the audio/video for any URL to FFmpeg for encoding including generating a live playlist.
+avcapture allows you to run a containarized application that captures the content and pipes the audio/video for any URL to FFmpeg for encoding including generating a live playlist.
 
 ## Build and Run
 
 - **Build**: `make build`
-- **Run**: `docker run -it --net test -v $PWD/path/to/dir:$PWD/path/to/dir --name avcapture -p 8080:8080 etherlabsio/avcapture`
+- **Run**: `docker run -it --net test -v $PWD/path/to/dir:$PWD/path/to/dir -v $PWD/path/to/data:/data -e FFMPEG_TGZ_URI="<url for ffmpeg executable in tgz>" -e FFMPEG_DEPS_URI="<url for ffmpeg dependencies in lib directory>" --name avcapture -p 8080:8080 etherlabsio/avcapture`
+  - As part of ini script, avcapture will download ffmpeg and dependencies to `/data` directory. ffmpeg binary will be copied to /usr/local/bin and dependencies will be copied to `/usr/local/lib`
+  - If the ffmpeg and dependencies have to be extracted in every run, initialize the environment variable `DISABLE_FFMPEG_CACHE` with some value. For example `-e DISABLE_FFMPEG_CACHE="FFMPEG"`.
 
 ## API
 
@@ -111,4 +113,5 @@ Once the `/start_recording` is received, chrome will be started to render the `u
 - User will not be able to add modules to pulseaudio.
 
 ## Notice
+
 This software uses code of <a href=http://ffmpeg.org>FFmpeg</a> licensed under the <a href=http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html>LGPLv2.1</a> and its source can be downloaded <a href=https://github.com/etherlabsio/ffmpeg>here</a>
