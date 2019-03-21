@@ -43,8 +43,9 @@ COPY scripts/start-server.sh start-server.sh
 RUN /bin/sh run-chrome.sh
 
 ENV DISPLAY=:99
+ENV LD_LIBRARY_PATH=/usr/local/lib
 
 COPY --from=go-builder /dist /bin/
-ENV         LD_LIBRARY_PATH=/usr/local/lib
+
 ## Hack to remove default  browser check in chrome
 ENTRYPOINT ["/app/start-server.sh"]
