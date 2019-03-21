@@ -23,7 +23,7 @@ COPY pkg pkg
 
 RUN CGO_ENABLED=0 go build -tags debug -o /dist/server -v -i -ldflags="-s -w" ./cmd/server
 
-FROM etherlabsio/ffmpeg:4.0.2
+FROM ubuntu:16.04
 
 WORKDIR /app
 
@@ -39,11 +39,13 @@ RUN echo 'deb http://dl.google.com/linux/chrome/deb/ stable main' >>  /etc/apt/s
     rm -rf /var/lib/apt/lists/*
 
 COPY scripts/run-chrome.sh run-chrome.sh
+COPY scripts/start-server.sh start-server.sh
 RUN /bin/sh run-chrome.sh
 
 ENV DISPLAY=:99
+ENV LD_LIBRARY_PATH=/usr/local/lib
 
 COPY --from=go-builder /dist /bin/
 
 ## Hack to remove default  browser check in chrome
-ENTRYPOINT ["/bin/server"]
+ENTRYPOINT ["/app/start-server.sh"]
