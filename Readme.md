@@ -7,7 +7,7 @@ avcapture allows you to run a containarized application that captures the conten
 - **Build**: `make build`
 - **Run**: 
 
-`docker run -it --net test -v $PWD/path/to/dir:$PWD/path/to/dir -v $PWD/path/to/data:/data -e FFMPEG_URI="<url for ffmpeg executable in tgz>" -e FFMPEG_DEPS_URI="<url for ffmpeg dependencies in lib directory>" --name avcapture -p 8080:8080 etherlabsio/avcapture`
+`docker run -it --net test -v $PWD/path/to/dir:$PWD/path/to/dir -v $PWD/path/to/data:/data -e FFMPEG_TGZ_URI="<url for ffmpeg executable in tgz>" -e FFMPEG_DEPS_URI="<url for ffmpeg dependencies in lib directory>" --name avcapture -p 8080:8080 etherlabsio/avcapture`
 
   - As part of ini script, avcapture will download ffmpeg and dependencies to `/data` directory. ffmpeg binary will be copied to /usr/local/bin and dependencies will be copied to `/usr/local/lib`
   - If the ffmpeg and dependencies have to be extracted in every run, initialize the environment variable `DISABLE_FFMPEG_CACHE` with some value. For example `-e DISABLE_FFMPEG_CACHE="true"`.
