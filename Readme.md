@@ -14,7 +14,7 @@ avcapture allows you to run a containarized application that captures the conten
 
 ## Dependencies
 
-* A link to a tar.gz containing FFmpeg v4.0.2 binary to be provided by the end user as an environment variable on docker run.
+* A link must be provided to FFmpeg v4.0.2 via the FFMPEG_TGZ_URI environment variable during docker run.
 
 ## Configuration
 
@@ -27,7 +27,7 @@ avcapture allows you to run a containarized application that captures the conten
 ### start-recording
 
 - POST: <http://IP:8080/start_recording>
-- "ffmpeg:options" and "chrome:options" are optional. If it is specified, the original arguments to these applications will be replaced completely with the provided one. User has to take care on the arguments passed for proper functionality.
+- "ffmpeg:options" and "chrome:options" are optional. If it is specified, the original arguments to these applications will be replaced completely with the one provided below.
 
 ```json
 {
