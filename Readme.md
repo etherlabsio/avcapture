@@ -102,3 +102,8 @@ Once the `/start_recording` is received, chrome will be started to render the `u
 ## Notice  
 
 We **do not** package avcapture with either FFmpeg or any shared libs and expect the end user to provide their own distribution.
+
+
+## License
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fetherlabsio%2Favcapture.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fetherlabsio%2Favcapture?ref=badge_large)
