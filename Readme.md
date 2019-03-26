@@ -1,6 +1,4 @@
 # avcapture
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fetherlabsio%2Favcapture.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fetherlabsio%2Favcapture?ref=badge_shield)
-
 
 avcapture allows you to run a containarized application that captures the content and pipes the audio/video for any URL for encoding including generating a live playlist.
 
@@ -107,4 +105,5 @@ We **do not** package avcapture with either FFmpeg or any shared libs and expect
 
 
 ## License
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fetherlabsio%2Favcapture.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fetherlabsio%2Favcapture?ref=badge_large)
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fetherlabsio%2Favcapture.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fetherlabsio%2Favcapture?ref=badge_large)
