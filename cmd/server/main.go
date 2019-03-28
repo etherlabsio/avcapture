@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/oklog/run"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"runtime"
 	"syscall"
+
+	"github.com/oklog/run"
 
 	"github.com/etherlabsio/healthcheck"
 
@@ -59,11 +60,9 @@ func setupAVCaptureDevices() error {
 	}).Do(func() error {
 		return commander.Exec("pacmd load-module module-virtual-sink sink_name=v1")
 	}).Do(func() error {
-		return commander.Exec("pacmd load-module module-virtual-source source_name=VirtualInput")
-	}).Do(func() error {
 		return commander.Exec("pacmd set-default-sink v1")
 	}).Do(func() error {
-		return commander.Exec("pacmd set-default-source VirtualInput")
+		return commander.Exec("pacmd set-default-source v1.monitor")
 	}).Do(func() error {
 		return commander.Exec("Xvfb :99 -screen 0 1280x720x16 &> xvfb.log &")
 	}).Err()
