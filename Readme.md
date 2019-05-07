@@ -1,24 +1,39 @@
 # avcapture
 
-avcapture allows you to run a that captures the content and pipes the audio/video for any URL to FFmpeg for encoding including generating a live playlist.
+avcapture allows you to run a containarized application that captures the content and pipes the audio/video for any URL for encoding including generating a live playlist.
 
 ## Build and Run
 
 - **Build**: `make build`
-- **Run**: `docker run -it --net test -v $PWD/path/to/dir:$PWD/path/to/dir --name avcapture -p 8080:8080 etherlabsio/avcapture`
+- **Run**: 
+
+`docker run -it --net test -v $PWD/path/to/dir:$PWD/path/to/dir -v $PWD/path/to/data:/data -e FFMPEG_TGZ_URI="<url for ffmpeg executable in tgz>" -e FFMPEG_DEPS_URI="<url for ffmpeg dependencies in lib directory>" --name avcapture -p 8080:8080 etherlabsio/avcapture`
+
+  - As part of ini script, avcapture will download ffmpeg and dependencies to `/data` directory. ffmpeg binary will be copied to /usr/local/bin and dependencies will be copied to `/usr/local/lib`
+  - If the ffmpeg and dependencies have to be extracted in every run, initialize the environment variable `DISABLE_FFMPEG_CACHE` with some value. For example `-e DISABLE_FFMPEG_CACHE="true"`.
+
+## Dependencies
+
+* A link must be provided to FFmpeg v4.0.2 via the FFMPEG_TGZ_URI environment variable during docker run.
+
+## Configuration
+
+* By default, the application will run server on port `8080`. If the application has to run on a different port, set the environment variable `PORT` with the new port inside the Dockerfile before the `ENTRYPOINT`.
+* The user must provide a link to download their own distribution of `FFmpeg v4.0.2` via the `FFMPEG_TGZ_URI` environment variable during docker run.
+* A URI containing `tar.gz` distribution of shared libs to be used by the FFmpeg binary can be provided setting the `FFMPEG_DEPS_URI` environment variable.
 
 ## API
 
 ### start-recording
 
 - POST: <http://IP:8080/start_recording>
-- "ffmpeg:options" and "chrome:options" are optional. If it is specified, the original arguments to these applications will be replaced completely with the provided one. User has to take care on the arguments passed for proper functionality.
+- "ffmpeg:options" and "chrome:options" are optional. If it is specified, the original arguments to these applications will be replaced completely with the one provided below.
 
 ```json
 {
   "ffmpeg": {
     "params": [
-      [" -hls_time", "6"],
+      ["-hls_time", "6"],
       ["-hls_playlist_type", "event"],
       ["-hls_segment_filename", "/work/out%04d.ts"],
       ["/work/play.m3u8"]
@@ -74,15 +89,6 @@ avcapture allows you to run a that captures the content and pipes the audio/vide
 - POST: <http://IP:8080/stop_recording>
 - No parameter is passed to this call.
 
-## Configuration
-
-By default, the application will run server on port **8080**. If the application has to run on a different port, set the environment variable `PORT` with the new port inside the Dockerfile before the `ENTRYPOINT`.
-For example:
-
-```dockerfile
-ENV PORT=":8080"
-```
-
 ## Output
 
 User is supposed to map a directory from host system to the docker image. Along with this, user has to provide the output path (as part of `/start_recording` api) which will direct the output generated to the corresponding directory.
@@ -93,19 +99,11 @@ The docker image contains google chrome, ffmpeg and wrapper application.
 As part of startup, the wrapper application will configure the system to run chrome browser on the given display id and to capture audio using pulseaudio.
 Once the `/start_recording` is received, chrome will be started to render the `url` provided. An instance of ffmpeg will be started to capture the display.
 
-## Version Info
+## Notice  
 
-| Component         | Version       | Details                                                                   |
-| ----------------- | ------------- | ------------------------------------------------------------------------- |
-| Base docker image | ubuntu:16.04  |                                                                           |
-| ffmpeg            | 4.0.2         | <https://ffmpeg.org/releases/ffmpeg-4.0.2.tar.bz2>                        |
-| libx264           | latest        | git://git.videolan.org/x264.git                                           |
-| nasm              | 2.13.03       | <https://www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.bz2> |
-| Google chrome     | Latest stable | deb <http://dl.google.com/linux/chrome/deb/> stable main                  |
-| pulseaudio        | 8.0           |
+We **do not** package avcapture with either FFmpeg or any shared libs and expect the end user to provide their own distribution.
 
-## Known limitations
 
-- The solution is validated on ubuntu 16.04 (with pulseaudio v8.0). Ubuntu 18.04 contains pulseaudio 11.1 which breaks a few features. With pulseaudio 11.1,
-- To run pulseaudio as daemon on root, `--system` has to be mentioned.
-- User will not be able to add modules to pulseaudio.
+## License
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fetherlabsio%2Favcapture.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fetherlabsio%2Favcapture?ref=badge_large)
