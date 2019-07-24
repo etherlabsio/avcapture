@@ -2,16 +2,29 @@ package recorder
 
 import (
 	"sync"
+	"time"
+
+	"github.com/etherlabsio/errors"
 )
 
 type Runnable interface {
 	Start() error
 	Stop() error
+	Restart() error
 }
 
+type state int
+
+const (
+	idle state = 1 + iota
+	running
+	reloading
+)
+
 type Recorder struct {
-	Running bool
-	mtx     sync.Mutex
+	state               state
+	lastHealthCheckedAt time.Time
+	mtx                 sync.Mutex
 
 	FFmpegCmd Runnable
 	ChromeCmd Runnable
@@ -28,7 +41,7 @@ type Chrome struct {
 }
 
 func cleanup(rec *Recorder) {
-	rec.Running = false
+	rec.state = idle
 	rec.FFmpegCmd = nil
 	rec.ChromeCmd = nil
 }
@@ -36,5 +49,33 @@ func cleanup(rec *Recorder) {
 func setRunInfo(rec *Recorder, ffmpeg, chrome Runnable) {
 	rec.ChromeCmd = chrome
 	rec.FFmpegCmd = ffmpeg
-	rec.Running = true
+	rec.state = running
+}
+
+func setIdle(rec *Recorder) {
+	rec.state = idle
+}
+
+func setReloading(rec *Recorder) error {
+	if rec.state != running {
+		return errors.New("recorder not in running state")
+	}
+	rec.state = reloading
+	return nil
+}
+
+func setRunning(rec *Recorder) error {
+	if rec.state == running {
+		return errors.New("recorder is already in running state")
+	}
+	rec.state = running
+	return nil
+}
+
+func setRunningFromReloading(rec *Recorder) error {
+	if rec.state != reloading {
+		return errors.New("recorder is not in reloading state")
+	}
+	rec.state = running
+	return nil
 }

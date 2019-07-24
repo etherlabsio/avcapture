@@ -39,7 +39,8 @@ func Exec(args ...string) error {
 
 // RunnableCmd returns a runnable Shell command
 type RunnableCmd struct {
-	cmd *exec.Cmd
+	cmd  *exec.Cmd
+	args []string
 }
 
 func New(args ...string) *RunnableCmd {
@@ -47,7 +48,7 @@ func New(args ...string) *RunnableCmd {
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	return &RunnableCmd{cmd}
+	return &RunnableCmd{cmd, args}
 }
 
 // Args returns a concatenated string args
@@ -84,6 +85,18 @@ func (s *RunnableCmd) Stop() error {
 
 	err = stop(pgid, syscall.SIGTERM)
 	return errors.WithMessagef(err, "stop failure: %v", s.cmd.Args)
+}
+
+// Restart restarts command
+func (s *RunnableCmd) Restart() error {
+	if err := s.Stop(); err != nil {
+		return errors.WithMessage(err, "error while stopping command")
+	}
+	s.cmd = buildCommand(s.args...)
+	s.cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	s.cmd.Stdout = os.Stdout
+	s.cmd.Stderr = os.Stderr
+	return errors.WithMessage(s.Start(), "errow while starting command")
 }
 
 func isSIGTERM(err *exec.ExitError) bool {

@@ -8,11 +8,19 @@ import (
 	"github.com/etherlabsio/avcapture/pkg/commander"
 	"github.com/etherlabsio/avcapture/pkg/ffmpeg"
 	"github.com/etherlabsio/errors"
+	"github.com/go-kit/kit/log"
 )
 
 type errResponse struct {
 	Err error `json:"error,omitempty"`
 }
+
+const (
+	healthCheckInterval          = 2 * time.Second
+	maxUnhealthyRecorderInterval = 5 * time.Second
+	initHealthCheckWait          = 30 * time.Second
+	reloadWaitInterval           = 2 * time.Second
+)
 
 func (e errResponse) Failed() error {
 	if e.Err == nil {
@@ -44,15 +52,18 @@ type StopRecordingResponse struct {
 type Service interface {
 	Start(context.Context, StartRecordingRequest) StartRecordingResponse
 	Stop(context.Context, StopRecordingRequest) StopRecordingResponse
+	Check(context.Context) error
 }
 
 type service struct {
 	recorder *Recorder
+	logger   log.Logger
 }
 
-func NewService() Service {
+func NewService(l log.Logger) Service {
 	return &service{
-		recorder: &Recorder{},
+		recorder: &Recorder{state: idle},
+		logger:   l,
 	}
 }
 
@@ -62,14 +73,11 @@ const (
 )
 
 func (svc *service) Start(ctx context.Context, req StartRecordingRequest) (resp StartRecordingResponse) {
-	const chromeLaunchWaitTime = 30 * time.Second
-
-	// TODO: optimistic check and return
-
+	const chromeLaunchWaitTime = 5 * time.Second
 	svc.recorder.mtx.Lock()
 	defer svc.recorder.mtx.Unlock()
 
-	if svc.recorder.Running {
+	if svc.recorder.state == running {
 		resp.Err = errors.New("recorder already running", AlreadyRunning)
 		return resp
 	}
@@ -118,21 +126,51 @@ func (svc *service) Start(ctx context.Context, req StartRecordingRequest) (resp 
 	}
 
 	setRunInfo(svc.recorder, ffmpegCmd, chromeCmd)
-
 	resp.StartTime = time.Now().UTC()
+	go svc.startHealthCheck()
 	return resp
+}
+
+func (svc *service) startHealthCheck() {
+	time.Sleep(initHealthCheckWait)
+	for {
+		if svc.recorder.state == idle {
+			break
+		}
+		if svc.recorder.state != reloading && time.Now().UTC().Sub(svc.recorder.lastHealthCheckedAt) > maxUnhealthyRecorderInterval {
+			go svc.reloadRecInChrome()
+		}
+		time.Sleep(healthCheckInterval)
+	}
+}
+
+func (svc *service) reloadRecInChrome() {
+	if err := setReloading(svc.recorder); err != nil {
+		svc.logger.Log("err", errors.Wrap(err, "error while setting reloading state"))
+		return
+	}
+	err := svc.recorder.ChromeCmd.Restart()
+	if err != nil {
+		svc.logger.Log("err", errors.Wrap(err, "error while restarting chrome due to bad health"))
+		setRunning(svc.recorder)
+		return
+	}
+	time.Sleep(initHealthCheckWait)
+	if err := setRunningFromReloading(svc.recorder); err != nil {
+		svc.logger.Log("err", errors.Wrap(err, "error while setting running state after reloading"))
+	}
 }
 
 func (svc *service) Stop(ctx context.Context, req StopRecordingRequest) (resp StopRecordingResponse) {
 	svc.recorder.mtx.Lock()
 	defer svc.recorder.mtx.Unlock()
 
-	stopTime := time.Now().UTC()
-	if !svc.recorder.Running {
+	if svc.recorder.state == idle {
 		resp.Err = errors.New("avcapture: is not running", AlreadyEnded)
 		return resp
 	}
-
+	setIdle(svc.recorder)
+	stopTime := time.Now().UTC()
 	err := errors.
 		Do(svc.recorder.FFmpegCmd.Stop).
 		Do(svc.recorder.ChromeCmd.Stop).
@@ -142,11 +180,12 @@ func (svc *service) Stop(ctx context.Context, req StopRecordingRequest) (resp St
 		resp.Err = errors.New("avcapture: end running process error", err)
 		return resp
 	}
-
-	// cleanup the recorder object
 	cleanup(svc.recorder)
-
 	resp.StopTime = stopTime
-
 	return resp
+}
+
+func (svc *service) Check(context.Context) error {
+	svc.recorder.lastHealthCheckedAt = time.Now().UTC()
+	return nil
 }

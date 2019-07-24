@@ -30,3 +30,7 @@ func (mw validationMiddleware) Start(ctx context.Context, req StartRecordingRequ
 func (mw validationMiddleware) Stop(ctx context.Context, req StopRecordingRequest) StopRecordingResponse {
 	return mw.next.Stop(ctx, req)
 }
+
+func (mw validationMiddleware) Check(ctx context.Context) error {
+	return mw.next.Check(ctx)
+}
