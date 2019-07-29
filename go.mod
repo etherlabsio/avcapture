@@ -5,7 +5,7 @@ require (
 	github.com/etherlabsio/healthcheck v0.0.0-20180309051318-343d97cb6361
 	github.com/etherlabsio/pkg v0.0.0-20190205140756-07224d073fd3
 	github.com/fsnotify/fsnotify v1.4.7
-	github.com/go-chi/chi v4.0.1+incompatible
+	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/go-kit/kit v0.8.0
 	github.com/go-logfmt/logfmt v0.4.0
 	github.com/hashicorp/hcl v1.0.0
