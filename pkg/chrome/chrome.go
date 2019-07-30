@@ -16,7 +16,8 @@ func NewBuilder() Builder {
 			"--no-sandbox",
 			"--disable-infobars",
 			"--kiosk",
-			"--start-maximized --window-position=0,0",
+			"--start-maximized",
+			"--window-position=0,0",
 			"--window-size=1280,720",
 		},
 	}
