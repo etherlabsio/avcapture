@@ -13,6 +13,7 @@ func NewBuilder() Builder {
 		options: []string{
 			"--enable-logging=stderr",
 			"--autoplay-policy=no-user-gesture-required",
+			"--ignore-autoplay-restrictions",
 			"--no-sandbox",
 			"--disable-infobars",
 			"--kiosk",
