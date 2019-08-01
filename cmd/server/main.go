@@ -51,21 +51,24 @@ func init() {
 	pflag.Parse()
 }
 
-func setupAVCaptureDevices() error {
+func setupAVCaptureDevices() (err error) {
 	if runtime.GOOS != "linux" {
 		return nil
 	}
-	return errors.Do(func() error {
-		return commander.Exec("pulseaudio -D --exit-idle-time=-1")
-	}).Do(func() error {
-		return commander.Exec("pacmd load-module module-virtual-sink sink_name=v1")
-	}).Do(func() error {
-		return commander.Exec("pacmd set-default-sink v1")
-	}).Do(func() error {
-		return commander.Exec("pacmd set-default-source v1.monitor")
-	}).Do(func() error {
-		return commander.Exec("Xvfb :99 -screen 0 1280x720x16 &> xvfb.log &")
-	}).Err()
+	commands := []string{
+		"pulseaudio -D --exit-idle-time=-1",
+		"pacmd load-module module-virtual-sink sink_name=v1",
+		"pacmd set-default-sink v1",
+		"pacmd set-default-source v1.monitor",
+		"Xvfb :99 -screen 0 1280x720x16 &> xvfb.log &",
+	}
+	for _, cmd := range commands {
+		err = commander.Exec(cmd)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func httpStatusCodeFrom(err error) int {
