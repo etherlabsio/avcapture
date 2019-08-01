@@ -11,9 +11,7 @@ RUN echo 'deb http://dl.google.com/linux/chrome/deb/ stable main' >>  /etc/apt/s
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-COPY scripts/run-chrome.sh run-chrome.sh
-COPY scripts/start-server.sh start-server.sh
-RUN /bin/sh run-chrome.sh
-
 ENV DISPLAY=:99
 ENV LD_LIBRARY_PATH=/usr/local/lib
+
+CMD ["/bin/bash"]
