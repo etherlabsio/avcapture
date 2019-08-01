@@ -23,20 +23,9 @@ COPY pkg pkg
 
 RUN CGO_ENABLED=0 go build -tags debug -o /dist/server -v -i -ldflags="-s -w" ./cmd/server
 
-FROM ubuntu:16.04
+FROM etherlabsio/avcapture:base
 
 WORKDIR /app
-
-# Install google chrome
-RUN echo 'deb http://dl.google.com/linux/chrome/deb/ stable main' >>  /etc/apt/sources.list.d/dl_google_com_linux_chrome_deb.list && \
-    apt-get update && \
-    apt-get install -y pulseaudio xvfb wget gnupg htop --no-install-recommends && \
-    wget https://dl.google.com/linux/linux_signing_key.pub --no-check-certificate && \
-    apt-key add linux_signing_key.pub && \
-    apt-get update && \
-    apt-get install -y google-chrome-stable --no-install-recommends && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
 
 COPY scripts/run-chrome.sh run-chrome.sh
 COPY scripts/start-server.sh start-server.sh

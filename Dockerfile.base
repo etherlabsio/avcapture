@@ -1,0 +1,17 @@
+FROM ubuntu:16.04
+
+# Install google chrome
+RUN echo 'deb http://dl.google.com/linux/chrome/deb/ stable main' >>  /etc/apt/sources.list.d/dl_google_com_linux_chrome_deb.list && \
+    apt-get update && \
+    apt-get install -y pulseaudio xvfb wget gnupg htop --no-install-recommends && \
+    wget https://dl.google.com/linux/linux_signing_key.pub --no-check-certificate && \
+    apt-key add linux_signing_key.pub && \
+    apt-get update && \
+    apt-get install -y google-chrome-stable --no-install-recommends && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV DISPLAY=:99
+ENV LD_LIBRARY_PATH=/usr/local/lib
+
+CMD ["/bin/bash"]
