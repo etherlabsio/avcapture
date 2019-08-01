@@ -13,10 +13,12 @@ func NewBuilder() Builder {
 		options: []string{
 			"--enable-logging=stderr",
 			"--autoplay-policy=no-user-gesture-required",
+			"--ignore-autoplay-restrictions",
 			"--no-sandbox",
 			"--disable-infobars",
 			"--kiosk",
-			"--start-maximized --window-position=0,0",
+			"--start-maximized",
+			"--window-position=0,0",
 			"--window-size=1280,720",
 		},
 	}
