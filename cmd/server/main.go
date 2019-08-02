@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"net"
 	"net/http"
@@ -11,9 +12,9 @@ import (
 	"runtime"
 	"syscall"
 
-	"github.com/oklog/run"
-
 	"github.com/etherlabsio/healthcheck"
+	"github.com/oklog/run"
+	"github.com/peterbourgon/ff"
 
 	"github.com/etherlabsio/avcapture/internal/recorder"
 	"github.com/go-chi/chi"
@@ -23,32 +24,13 @@ import (
 	"github.com/etherlabsio/errors"
 	"github.com/etherlabsio/pkg/httputil"
 	"github.com/etherlabsio/pkg/logutil"
-	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
 )
 
 // Configuration defines the settings required during the app initiation
 type Configuration struct {
-	Port  string
-	Debug bool
-}
-
-func init() {
-	const (
-		portArg  = "port"
-		debugArg = "debug"
-	)
-
-	pflag.String(portArg, ":8080", "Port for the HTTP listener")
-	pflag.Bool(debugArg, false, "Enable debug mode")
-
-	viper.AutomaticEnv()
-	viper.BindPFlag(portArg, pflag.Lookup(portArg))
-	viper.BindPFlag(debugArg, pflag.Lookup(debugArg))
-
-	pflag.Parse()
+	Port  *string
+	Debug *bool
 }
 
 func setupAVCaptureDevices() (err error) {
@@ -83,13 +65,14 @@ func httpStatusCodeFrom(err error) int {
 }
 
 func main() {
+	fs := flag.NewFlagSet("avcapture", flag.ExitOnError)
 	config := Configuration{
-		Port:  viper.GetString("port"),
-		Debug: viper.GetBool("debug"),
+		Port:  fs.String("port", ":8080", "Port for the HTTP listener"),
+		Debug: fs.Bool("debug", false, "Enable debug mode"),
 	}
+	ff.Parse(fs, os.Args[1:], ff.WithEnvVarNoPrefix())
 
-	logger := logutil.NewServerLogger(config.Debug)
-	logger = log.With(logger, "app", "avcapture")
+	logger := logutil.NewServerLogger(*config.Debug)
 
 	err := setupAVCaptureDevices()
 	if err != nil {
@@ -138,7 +121,7 @@ func main() {
 		// The HTTP listener mounts the Go kit HTTP handler we created.
 		//address := cfg.GetString("http.address")
 		//ETHER Temp change
-		httpListener, err := net.Listen("tcp", config.Port)
+		httpListener, err := net.Listen("tcp", *config.Port)
 		if err != nil {
 			logger.Log("transport", "HTTP", "during", "listen", "err", err)
 			os.Exit(1)
