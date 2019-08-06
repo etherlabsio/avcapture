@@ -72,8 +72,6 @@ func main() {
 		Debug: fs.Bool("debug", false, "Enable debug mode"),
 	}
 	ff.Parse(fs, os.Args[1:], ff.WithEnvVarNoPrefix())
-
-	// logger := logutil.NewServerLogger(*config.Debug)
 	logger := logutil.NewServerLogger(true)
 
 	err := setupAVCaptureDevices()
@@ -84,7 +82,6 @@ func main() {
 
 	var recorderService recorder.Service
 	{
-		logger := logutil.NewServerLogger(true)
 		recorderService = recorder.NewService(logger)
 		recorderService = recorder.ValidationMiddleware(recorderService)
 		recorderService = recorder.LoggingMiddleware(logger)(recorderService)

@@ -138,13 +138,13 @@ func (svc *service) startHealthCheck() {
 			break
 		}
 		if svc.recorder.state != reloading && time.Now().UTC().Sub(svc.recorder.lastHealthCheckedAt) > maxUnhealthyRecorderInterval {
-			go svc.reloadRecInChrome()
+			go svc.reloadChromeInRec()
 		}
 		time.Sleep(healthCheckInterval)
 	}
 }
 
-func (svc *service) reloadRecInChrome() {
+func (svc *service) reloadChromeInRec() {
 	if err := setReloading(svc.recorder); err != nil {
 		svc.logger.Log("err", errors.Wrap(err, "error while setting reloading state"))
 		return
