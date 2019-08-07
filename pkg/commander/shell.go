@@ -92,10 +92,7 @@ func (s *RunnableCmd) Restart() error {
 	if err := s.Stop(); err != nil {
 		return errors.WithMessage(err, "error while stopping command")
 	}
-	s.cmd = buildCommand(s.args...)
-	s.cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-	s.cmd.Stdout = os.Stdout
-	s.cmd.Stderr = os.Stderr
+	s.cmd = New(s.args...).cmd
 	return errors.WithMessage(s.Start(), "errow while starting command")
 }
 
