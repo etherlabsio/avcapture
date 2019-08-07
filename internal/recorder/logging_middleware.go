@@ -43,3 +43,12 @@ func (mw loggingMiddleware) Stop(ctx context.Context, req StopRecordingRequest) 
 	}(time.Now())
 	return mw.next.Stop(ctx, req)
 }
+
+func (mw loggingMiddleware) Check(ctx context.Context) error {
+	defer func(begin time.Time) {
+		logutil.
+			WithError(mw.logger, nil).
+			Log("method", "Healthcheck", "span", time.Since(begin))
+	}(time.Now())
+	return mw.next.Check(ctx)
+}

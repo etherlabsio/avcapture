@@ -12,16 +12,17 @@ import (
 	"runtime"
 	"syscall"
 
-	"github.com/etherlabsio/healthcheck"
 	"github.com/oklog/run"
 	"github.com/peterbourgon/ff"
 
 	"github.com/etherlabsio/avcapture/internal/recorder"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/cors"
 
 	"github.com/etherlabsio/avcapture/pkg/commander"
 	"github.com/etherlabsio/errors"
+	"github.com/etherlabsio/healthcheck"
 	"github.com/etherlabsio/pkg/httputil"
 	"github.com/etherlabsio/pkg/logutil"
 	"github.com/go-kit/kit/log/level"
@@ -71,8 +72,7 @@ func main() {
 		Debug: fs.Bool("debug", false, "Enable debug mode"),
 	}
 	ff.Parse(fs, os.Args[1:], ff.WithEnvVarNoPrefix())
-
-	logger := logutil.NewServerLogger(*config.Debug)
+	logger := logutil.NewServerLogger(true)
 
 	err := setupAVCaptureDevices()
 	if err != nil {
@@ -82,7 +82,7 @@ func main() {
 
 	var recorderService recorder.Service
 	{
-		recorderService = recorder.NewService()
+		recorderService = recorder.NewService(logger)
 		recorderService = recorder.ValidationMiddleware(recorderService)
 		recorderService = recorder.LoggingMiddleware(logger)(recorderService)
 	}
@@ -92,10 +92,16 @@ func main() {
 	httpErrorEncoder := httputil.JSONErrorEncoder(httpStatusCodeFrom)
 	httpJSONResponseEncoder := httputil.EncodeJSONResponse(httpErrorEncoder)
 
+	cors := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
+	})
+
 	r := chi.NewRouter()
 	r.Use(middleware.DefaultCompress)
 	r.Use(middleware.StripSlashes)
 	r.Use(middleware.Recoverer)
+	r.Use(cors.Handler)
 
 	r.Post("/start_recording", func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -114,7 +120,7 @@ func main() {
 		httpJSONResponseEncoder(ctx, w, resp)
 	})
 
-	r.Get("/debug/healthcheck", healthcheck.HandlerFunc())
+	r.Get("/debug/healthcheck", healthcheck.HandlerFunc(healthcheck.WithChecker("recorder", recorderService)))
 
 	var g run.Group
 	{
