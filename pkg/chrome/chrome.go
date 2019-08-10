@@ -20,6 +20,7 @@ func NewBuilder() Builder {
 			"--start-maximized",
 			"--window-position=0,0",
 			"--window-size=1280,720",
+			"--disable-dev-shm-usage",
 		},
 	}
 }
