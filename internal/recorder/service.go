@@ -20,6 +20,8 @@ const (
 	maxUnhealthyRecorderInterval = 5 * time.Second
 	initHealthCheckWait          = 30 * time.Second
 	reloadWaitInterval           = 2 * time.Second
+	hlsSegmentDurationSec        = "6"
+	thumbnailDurationSec         = "6"
 )
 
 func (e errResponse) Failed() error {
@@ -31,8 +33,11 @@ func (e errResponse) Failed() error {
 
 // StartRecordingRequest is the payload being received by recorder as part of start_recording
 type StartRecordingRequest struct {
-	FFmpeg `json:"ffmpeg"`
-	Chrome `json:"chrome"`
+	FFmpeg     `json:"ffmpeg"`
+	Chrome     `json:"chrome"`
+	RecDir     string `json:"recDir"`
+	DRMKeyPath string `json:"drmKeyPath"`
+	URL        string `json:"url"`
 }
 
 // StartRecordingResponse defines response structure for the stop recording request
@@ -84,7 +89,7 @@ func (svc *service) Start(ctx context.Context, req StartRecordingRequest) (resp 
 
 	var ffmpegCmd Runnable
 	{
-		ffmpegBuilder := ffmpeg.NewBuilder()
+		ffmpegBuilder := ffmpeg.NewBuilder(req.RecDir, req.DRMKeyPath, hlsSegmentDurationSec, thumbnailDurationSec)
 		ffmpegBuilder = ffmpegBuilder.WithOptions(req.FFmpeg.Options...)
 		ffmpegBuilder = ffmpegBuilder.WithArguments(req.FFmpeg.Params...)
 		args, err := ffmpegBuilder.Build()
@@ -99,7 +104,7 @@ func (svc *service) Start(ctx context.Context, req StartRecordingRequest) (resp 
 	{
 		chromeBuilder := chrome.NewBuilder()
 		chromeBuilder = chromeBuilder.WithOptions(req.Chrome.Options...)
-		chromeBuilder = chromeBuilder.WithURL(req.Chrome.URL)
+		chromeBuilder = chromeBuilder.WithURL(req.URL)
 		args, err := chromeBuilder.Build()
 		if err != nil {
 			resp.Err = errors.New("chrome input invalid", errors.Invalid, err)
@@ -125,7 +130,7 @@ func (svc *service) Start(ctx context.Context, req StartRecordingRequest) (resp 
 		return resp
 	}
 
-	setRunInfo(svc.recorder, ffmpegCmd, chromeCmd)
+	setRunInfo(svc.recorder, ffmpegCmd, chromeCmd, req.RecDir)
 	resp.StartTime = time.Now().UTC()
 	go svc.startHealthCheck()
 	return resp
@@ -180,9 +185,17 @@ func (svc *service) Stop(ctx context.Context, req StopRecordingRequest) (resp St
 		resp.Err = errors.New("avcapture: end running process error", err)
 		return resp
 	}
+	if err := svc.createThumbnailSprite(); err != nil {
+		svc.logger.Log("err", errors.Wrap(err, "error while creating thumbnail sprite for recording"))
+	}
+
 	cleanup(svc.recorder)
 	resp.StopTime = stopTime
 	return resp
+}
+
+func (svc *service) createThumbnailSprite() error {
+	return commander.Exec("gm convert +append " + svc.recorder.recDir + "/thumb*.jpg " + svc.recorder.recDir + "/sprite.jpg")
 }
 
 func (svc *service) Check(context.Context) error {

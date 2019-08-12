@@ -26,7 +26,10 @@ RUN CGO_ENABLED=0 go build -tags debug -o /dist/server -v -i -ldflags="-s -w" ./
 FROM etherlabsio/avcapture:base
 
 WORKDIR /app
-
+RUN apt-get update && \
+    apt-get install -y graphicsmagick --no-install-recommends && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 COPY scripts/run-chrome.sh run-chrome.sh
 COPY scripts/start-server.sh start-server.sh
 RUN /bin/sh run-chrome.sh

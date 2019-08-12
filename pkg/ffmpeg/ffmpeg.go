@@ -1,5 +1,7 @@
 package ffmpeg
 
+import "fmt"
+
 // Builder builds an FFmpeg command with safe default options
 type Builder struct {
 	execPath string
@@ -7,7 +9,9 @@ type Builder struct {
 	args     [][]string
 }
 
-func NewBuilder() Builder {
+func NewBuilder(opDir, drmKeypath, hlsSegmentDurationSec, thumbnailDuration string) Builder {
+	const ext = "m3u8"
+	opFile := fmt.Sprintf("%s/sub.%s", opDir, ext)
 	return Builder{
 		execPath: "/usr/local/bin/ffmpeg",
 		options: [][]string{
@@ -40,6 +44,12 @@ func NewBuilder() Builder {
 			{"-b:v", "2800k"},
 			{"-maxrate", "2996k"},
 			{"-bufsize", "4200k"},
+			{"-hls_key_info_file ", drmKeypath},
+			{"-hls_time", hlsSegmentDurationSec},
+			{"-hls_playlist_type", "event"},
+			{"-hls_segment_filename", opDir + "/out%04d.ts"},
+			{opFile},
+			{" -vf fps=1/" + thumbnailDuration + " -s 128x72", opDir + "/thumb%03d.jpg"},
 		},
 	}
 }

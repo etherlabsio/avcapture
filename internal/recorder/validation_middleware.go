@@ -16,11 +16,7 @@ type validationMiddleware struct {
 
 func (mw validationMiddleware) Start(ctx context.Context, req StartRecordingRequest) (resp StartRecordingResponse) {
 	var op errors.Op = "Start"
-	if 0 == len(req.FFmpeg.Params) {
-		resp.Err = errors.New("missing output params for encoding(ffmpeg)", op, errors.Invalid)
-		return resp
-	}
-	if "" == req.Chrome.URL {
+	if "" == req.URL {
 		resp.Err = errors.New("missing URL for capturing", op, errors.Invalid)
 		return resp
 	}

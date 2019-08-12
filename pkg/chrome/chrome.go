@@ -21,6 +21,15 @@ func NewBuilder() Builder {
 			"--window-position=0,0",
 			"--window-size=1280,720",
 			"--disable-dev-shm-usage",
+			"--enable-logging=stderr",
+			"--autoplay-policy=no-user-gesture-required",
+			"--no-sandbox",
+			"--disable-infobars",
+			"--kiosk",
+			"--start-maximized --window-position=0,0",
+			"--window-size=1280,720",
+			"--use-fake-ui-for-media-stream",
+			"--use-fake-device-for-media-stream",
 		},
 	}
 }
