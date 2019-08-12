@@ -49,7 +49,7 @@ func NewBuilder(opDir, drmKeypath, hlsSegmentDurationSec, thumbnailDuration stri
 			{"-hls_playlist_type", "event"},
 			{"-hls_segment_filename", opDir + "/out%04d.ts"},
 			{opFile},
-			{" -vf fps=1/" + thumbnailDuration + " -s 128x72", opDir + "/thumb%03d.jpg"},
+			{" -vf fps=1/" + thumbnailDuration + " -s 128x72", opDir + "/thumb%04d.jpg"},
 		},
 	}
 }
