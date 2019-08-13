@@ -8,6 +8,7 @@ import (
 	"github.com/etherlabsio/avcapture/pkg/commander"
 	"github.com/etherlabsio/avcapture/pkg/ffmpeg"
 	"github.com/etherlabsio/errors"
+	"github.com/etherlabsio/pkg/logutil"
 	"github.com/go-kit/kit/log"
 )
 
@@ -31,8 +32,11 @@ func (e errResponse) Failed() error {
 
 // StartRecordingRequest is the payload being received by recorder as part of start_recording
 type StartRecordingRequest struct {
-	FFmpeg `json:"ffmpeg"`
-	Chrome `json:"chrome"`
+	FFmpeg      `json:"ffmpeg"`
+	Chrome      `json:"chrome"`
+	Destination string `json:"destination"`
+	DRMKeyPath  string `json:"drmKeyPath"`
+	URL         string `json:"url"`
 }
 
 // StartRecordingResponse defines response structure for the stop recording request
@@ -84,7 +88,7 @@ func (svc *service) Start(ctx context.Context, req StartRecordingRequest) (resp 
 
 	var ffmpegCmd Runnable
 	{
-		ffmpegBuilder := ffmpeg.NewBuilder()
+		ffmpegBuilder := ffmpeg.NewBuilder(req.Destination, req.DRMKeyPath)
 		ffmpegBuilder = ffmpegBuilder.WithOptions(req.FFmpeg.Options...)
 		ffmpegBuilder = ffmpegBuilder.WithArguments(req.FFmpeg.Params...)
 		args, err := ffmpegBuilder.Build()
@@ -99,7 +103,7 @@ func (svc *service) Start(ctx context.Context, req StartRecordingRequest) (resp 
 	{
 		chromeBuilder := chrome.NewBuilder()
 		chromeBuilder = chromeBuilder.WithOptions(req.Chrome.Options...)
-		chromeBuilder = chromeBuilder.WithURL(req.Chrome.URL)
+		chromeBuilder = chromeBuilder.WithURL(req.URL)
 		args, err := chromeBuilder.Build()
 		if err != nil {
 			resp.Err = errors.New("chrome input invalid", errors.Invalid, err)
@@ -125,7 +129,7 @@ func (svc *service) Start(ctx context.Context, req StartRecordingRequest) (resp 
 		return resp
 	}
 
-	setRunInfo(svc.recorder, ffmpegCmd, chromeCmd)
+	setRunInfo(svc.recorder, ffmpegCmd, chromeCmd, req.Destination)
 	resp.StartTime = time.Now().UTC()
 	go svc.startHealthCheck()
 	return resp
@@ -180,9 +184,17 @@ func (svc *service) Stop(ctx context.Context, req StopRecordingRequest) (resp St
 		resp.Err = errors.New("avcapture: end running process error", err)
 		return resp
 	}
+	if err := createThumbnailSprite(svc.recorder.destination); err != nil {
+		logutil.WithError(svc.logger, err).Log("op", "thumbnail creation for sprite")
+	}
+
 	cleanup(svc.recorder)
 	resp.StopTime = stopTime
 	return resp
+}
+
+func createThumbnailSprite(thumbnailsDir string) error {
+	return commander.Exec("gm convert +append " + thumbnailsDir + "/thumb*.jpg " + thumbnailsDir + "/sprite.jpg")
 }
 
 func (svc *service) Check(context.Context) error {

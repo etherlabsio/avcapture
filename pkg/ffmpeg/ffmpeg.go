@@ -7,7 +7,13 @@ type Builder struct {
 	args     [][]string
 }
 
-func NewBuilder() Builder {
+func NewBuilder(outputDir, drmKeypath string) Builder {
+	const (
+		hlsSegmentDurationSec = "6"
+		thumbnailDuration     = "6"
+	)
+
+	mediaPlaylistPath := outputDir + "/sub.m3u8"
 	return Builder{
 		execPath: "/usr/local/bin/ffmpeg",
 		options: [][]string{
@@ -40,6 +46,12 @@ func NewBuilder() Builder {
 			{"-b:v", "2800k"},
 			{"-maxrate", "2996k"},
 			{"-bufsize", "4200k"},
+			{"-hls_key_info_file ", drmKeypath},
+			{"-hls_time", hlsSegmentDurationSec},
+			{"-hls_playlist_type", "event"},
+			{"-hls_segment_filename", outputDir + "/out%04d.ts"},
+			{mediaPlaylistPath},
+			{" -vf fps=1/" + thumbnailDuration + " -s 128x72", outputDir + "/thumb%04d.jpg"},
 		},
 	}
 }
