@@ -1,7 +1,5 @@
 package ffmpeg
 
-import "fmt"
-
 // Builder builds an FFmpeg command with safe default options
 type Builder struct {
 	execPath string
@@ -9,9 +7,13 @@ type Builder struct {
 	args     [][]string
 }
 
-func NewBuilder(opDir, drmKeypath, hlsSegmentDurationSec, thumbnailDuration string) Builder {
-	const ext = "m3u8"
-	opFile := fmt.Sprintf("%s/sub.%s", opDir, ext)
+func NewBuilder(outputDir, drmKeypath string) Builder {
+	const (
+		hlsSegmentDurationSec = "6"
+		thumbnailDuration     = "6"
+	)
+
+	mediaPlaylistPath := outputDir + "/sub.m3u8"
 	return Builder{
 		execPath: "/usr/local/bin/ffmpeg",
 		options: [][]string{
@@ -47,9 +49,9 @@ func NewBuilder(opDir, drmKeypath, hlsSegmentDurationSec, thumbnailDuration stri
 			{"-hls_key_info_file ", drmKeypath},
 			{"-hls_time", hlsSegmentDurationSec},
 			{"-hls_playlist_type", "event"},
-			{"-hls_segment_filename", opDir + "/out%04d.ts"},
-			{opFile},
-			{" -vf fps=1/" + thumbnailDuration + " -s 128x72", opDir + "/thumb%04d.jpg"},
+			{"-hls_segment_filename", outputDir + "/out%04d.ts"},
+			{mediaPlaylistPath},
+			{" -vf fps=1/" + thumbnailDuration + " -s 128x72", outputDir + "/thumb%04d.jpg"},
 		},
 	}
 }

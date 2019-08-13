@@ -25,7 +25,7 @@ type Recorder struct {
 	state               state
 	lastHealthCheckedAt time.Time
 	mtx                 sync.Mutex
-	recDir              string
+	destination         string
 
 	FFmpegCmd Runnable
 	ChromeCmd Runnable
@@ -45,14 +45,14 @@ func cleanup(rec *Recorder) {
 	rec.state = idle
 	rec.FFmpegCmd = nil
 	rec.ChromeCmd = nil
-	rec.recDir = ""
+	rec.destination = ""
 }
 
-func setRunInfo(rec *Recorder, ffmpeg, chrome Runnable, recDir string) {
+func setRunInfo(rec *Recorder, ffmpeg, chrome Runnable, destination string) {
 	rec.ChromeCmd = chrome
 	rec.FFmpegCmd = ffmpeg
 	rec.state = running
-	rec.recDir = recDir
+	rec.destination = destination
 }
 
 func setIdle(rec *Recorder) {
