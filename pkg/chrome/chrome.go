@@ -30,7 +30,6 @@ func NewBuilder() Builder {
 			"--window-position=0,0",
 			"--window-size=1280,720",
 			"--use-fake-ui-for-media-stream",
-			"--use-fake-device-for-media-stream",
 		},
 	}
 }
