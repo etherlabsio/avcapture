@@ -14,12 +14,23 @@ BRANCH=$(shell git rev-parse --short HEAD || echo -e '$CI_COMMIT_SHA')
 DOCKER_LOGIN=$(shell aws --profile ${ENV} ecr get-login --no-include-email --region ${AWS_REGION})
 IMAGE_PREFIX=${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/etherlabs
 CONTAINER_IMAGE=${IMAGE_PREFIX}/avcapture
+BASE_IMAGE=${CONTAINER_IMAGE}:base
 
 docker_login:
 	@eval ${DOCKER_LOGIN}
 
 build: docker_login
-	@docker build--build-arg BASE_IMAGE=${CONTAINER_IMAGE}:base -t ${CONTAINER_IMAGE}:${BRANCH} .
+	@echo ${BASE_IMAGE}
+	@docker pull ${BASE_IMAGE}
+	@docker build --build-arg BASE_IMAGE=${BASE_IMAGE} -t ${CONTAINER_IMAGE}:${BRANCH} .
+
+pre-deploy-notify:
+	@curl -X POST --data-urlencode 'payload={"text": "[${ENV}] [${BRANCH}] ${USER}: avcapture is being deployed"}' ${SLACK_WEBHOOK_URL}
+
+post-deploy-notify:
+	@curl -X POST --data-urlencode 'payload={"text": "[${ENV}] [${BRANCH}] ${USER}: avcapture is deployed"}' ${SLACK_WEBHOOK_URL}
+
+deploy: build pre-deploy-notify
 	@docker push ${CONTAINER_IMAGE}:${BRANCH}
 ifeq (${ENV},production)
 	@docker tag ${CONTAINER_IMAGE}:${BRANCH} ${CONTAINER_IMAGE}:latest
@@ -28,12 +39,7 @@ else
 	@docker tag ${CONTAINER_IMAGE}:${BRANCH} ${CONTAINER_IMAGE}:${ENV}
 	@docker push ${CONTAINER_IMAGE}:${ENV}
 endif
-
-pre-deploy-notify:
-	@curl -X POST --data-urlencode 'payload={"text": "[${ENV}] [${BRANCH}] ${USER}: avcapture is being deployed"}' ${SLACK_WEBHOOK_URL}
-
-post-deploy-notify:
-	@curl -X POST --data-urlencode 'payload={"text": "[${ENV}] [${BRANCH}] ${USER}: avcapture is deployed"}' ${SLACK_WEBHOOK_URL}
+	$(MAKE) post-deploy-notify
 
 dev:
 	env GOOS=linux GOARCH=amd64 go build -o ./bin/capture github.com/etherlabsio/avcapture/cmd/capture
