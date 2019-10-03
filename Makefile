@@ -19,7 +19,7 @@ docker_login:
 	@eval ${DOCKER_LOGIN}
 
 build: docker_login
-	@docker build--build-arg BASE_IMAGE=${IMAGE_PREFIX} -t ${CONTAINER_IMAGE}:${BRANCH} .
+	@docker build--build-arg BASE_IMAGE=${CONTAINER_IMAGE} -t ${CONTAINER_IMAGE}:${BRANCH} .
 	@docker push ${CONTAINER_IMAGE}:${BRANCH}
 ifeq (${ENV},production)
 	@docker tag ${CONTAINER_IMAGE}:${BRANCH} ${CONTAINER_IMAGE}:latest
