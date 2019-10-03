@@ -24,7 +24,7 @@ COPY pkg pkg
 RUN CGO_ENABLED=0 go build -tags debug -o /dist/server -v -i -ldflags="-s -w" ./cmd/server
 
 ARG BASE_IMAGE
-FROM ${BASE_IMAGE}:base
+FROM ${BASE_IMAGE}
 
 RUN apt-get update && \
     apt-get install -y graphicsmagick --no-install-recommends && \
