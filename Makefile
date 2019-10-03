@@ -30,10 +30,10 @@ else
 endif
 
 pre-deploy-notify:
-	@curl -X POST --data-urlencode 'payload={"text": "[${ENV}] [${BRANCH}] ${USER}: ${ARTIFACT} is being deployed"}' ${SLACK_WEBHOOK_URL}
+	@curl -X POST --data-urlencode 'payload={"text": "[${ENV}] [${BRANCH}] ${USER}: avcapture is being deployed"}' ${SLACK_WEBHOOK_URL}
 
 post-deploy-notify:
-	@curl -X POST --data-urlencode 'payload={"text": "[${ENV}] [${BRANCH}] ${USER}: ${ARTIFACT} is deployed"}' ${SLACK_WEBHOOK_URL}
+	@curl -X POST --data-urlencode 'payload={"text": "[${ENV}] [${BRANCH}] ${USER}: avcapture is deployed"}' ${SLACK_WEBHOOK_URL}
 
 dev:
 	env GOOS=linux GOARCH=amd64 go build -o ./bin/capture github.com/etherlabsio/avcapture/cmd/capture
