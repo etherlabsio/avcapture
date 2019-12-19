@@ -178,7 +178,7 @@ func (svc *service) Stop(ctx context.Context, req StopRecordingRequest) (resp St
 	err := errors.
 		Do(svc.recorder.ChromeCmd.Stop).
 		Do(func() error {
-			time.Sleep(10 * time.Second)
+			time.Sleep(5 * time.Second)
 			return nil
 		}).
 		Do(svc.recorder.FFmpegCmd.Stop).
