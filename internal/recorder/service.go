@@ -57,6 +57,8 @@ type Service interface {
 	Start(context.Context, StartRecordingRequest) StartRecordingResponse
 	Stop(context.Context, StopRecordingRequest) StopRecordingResponse
 	Check(context.Context) error
+	MuteRecordingAudio(context.Context) error
+	UnmuteRecordingAudio(context.Context) error
 }
 
 type service struct {
@@ -203,5 +205,31 @@ func createThumbnailSprite(thumbnailsDir string) error {
 
 func (svc *service) Check(context.Context) error {
 	svc.recorder.lastHealthCheckedAt = time.Now().UTC()
+	return nil
+}
+
+func (svc *service) MuteRecordingAudio(context.Context) error {
+	if svc.recorder.recordingAudioMuted {
+		return nil
+	}
+	const muteCmd = "pactl set-sink-mute @DEFAULT_SINK@ 1"
+	err := commander.Exec(muteCmd)
+	if err != nil {
+		errors.WithMessage(err, "error while muting recording audio")
+	}
+	svc.recorder.recordingAudioMuted = true
+	return nil
+}
+
+func (svc *service) UnmuteRecordingAudio(context.Context) error {
+	if !svc.recorder.recordingAudioMuted {
+		return nil
+	}
+	const unmuteCmd = "pactl set-sink-mute @DEFAULT_SINK@ 0"
+	err := commander.Exec(unmuteCmd)
+	if err!= nil {
+		errors.WithMessage(err, "error while unmuting recording audio")
+	}
+	svc.recorder.recordingAudioMuted = false
 	return nil
 }

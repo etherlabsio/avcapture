@@ -37,18 +37,32 @@ func (mw loggingMiddleware) Start(ctx context.Context, req StartRecordingRequest
 
 func (mw loggingMiddleware) Stop(ctx context.Context, req StopRecordingRequest) (resp StopRecordingResponse) {
 	defer func(begin time.Time) {
-		logutil.
-			WithError(mw.logger, resp.Failed()).
+		logutil.WithError(mw.logger, resp.Failed()).
 			Log("method", "Stop", "request", req, "span", time.Since(begin))
 	}(time.Now())
 	return mw.next.Stop(ctx, req)
 }
 
-func (mw loggingMiddleware) Check(ctx context.Context) error {
+func (mw loggingMiddleware) Check(ctx context.Context) (err error) {
 	defer func(begin time.Time) {
-		logutil.
-			WithError(mw.logger, nil).
+		logutil.WithError(mw.logger, err).
 			Log("method", "Healthcheck", "span", time.Since(begin))
 	}(time.Now())
 	return mw.next.Check(ctx)
+}
+
+func (mw loggingMiddleware) MuteRecordingAudio(ctx context.Context) (err error) {
+	defer func(begin time.Time) {
+		logutil.WithError(mw.logger, err).
+			Log("method", "MuteRecordingAudio", "span", time.Since(begin))
+	}(time.Now())
+	return mw.next.MuteRecordingAudio(ctx)
+}
+
+func (mw loggingMiddleware) UnmuteRecordingAudio(ctx context.Context) (err error) {
+	defer func(begin time.Time) {
+		logutil.WithError(mw.logger, err).
+			Log("method", "UnmuteRecordingAudio", "span", time.Since(begin))
+	}(time.Now())
+	return mw.next.UnmuteRecordingAudio(ctx)
 }

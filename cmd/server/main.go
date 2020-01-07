@@ -123,6 +123,18 @@ func main() {
 
 	r.Get("/debug/healthcheck", healthcheck.HandlerFunc(healthcheck.WithChecker("recorder", recorderService)))
 
+	r.Post("/mute_recording_audio", func(w http.ResponseWriter, r *http.Request){
+		ctx := r.Context()
+		resp := recorderService.MuteRecordingAudio(ctx)
+		httpJSONResponseEncoder(ctx, w, resp)
+	})
+
+	r.Post("/unmute_recording_audio", func(w http.ResponseWriter, r *http.Request){
+		ctx := r.Context()
+		resp := recorderService.UnmuteRecordingAudio(ctx)
+		httpJSONResponseEncoder(ctx, w, resp)
+	})
+
 	var g run.Group
 	{
 		// The HTTP listener mounts the Go kit HTTP handler we created.

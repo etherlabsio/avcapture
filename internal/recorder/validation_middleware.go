@@ -30,3 +30,11 @@ func (mw validationMiddleware) Stop(ctx context.Context, req StopRecordingReques
 func (mw validationMiddleware) Check(ctx context.Context) error {
 	return mw.next.Check(ctx)
 }
+
+func (mw validationMiddleware) MuteRecordingAudio(ctx context.Context) error {
+	return mw.next.MuteRecordingAudio(ctx)
+}
+
+func (mw validationMiddleware) UnmuteRecordingAudio(ctx context.Context) error {
+	return mw.next.UnmuteRecordingAudio(ctx)
+}

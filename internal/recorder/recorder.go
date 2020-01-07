@@ -26,6 +26,7 @@ type Recorder struct {
 	lastHealthCheckedAt time.Time
 	mtx                 sync.Mutex
 	destination         string
+	recordingAudioMuted bool
 
 	FFmpegCmd Runnable
 	ChromeCmd Runnable
@@ -52,6 +53,7 @@ func setRunInfo(rec *Recorder, ffmpeg, chrome Runnable, destination string) {
 	rec.ChromeCmd = chrome
 	rec.FFmpegCmd = ffmpeg
 	rec.state = running
+	rec.recordingAudioMuted = false
 	rec.destination = destination
 }
 
