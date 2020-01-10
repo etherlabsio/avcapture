@@ -53,7 +53,6 @@ func setRunInfo(rec *Recorder, ffmpeg, chrome Runnable, destination string) {
 	rec.ChromeCmd = chrome
 	rec.FFmpegCmd = ffmpeg
 	rec.state = running
-	rec.recordingAudioMuted = false
 	rec.destination = destination
 }
 
