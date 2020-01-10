@@ -114,7 +114,12 @@ func (svc *service) Start(ctx context.Context, req StartRecordingRequest) (resp 
 		chromeCmd = commander.New(args...)
 	}
 
-	err := errors.
+	err :=svc.UnmuteRecordingAudio(ctx)
+	if err != nil {
+		resp.Err = errors.WithMessage(err, "error while unmuting the recorder audio")
+		return resp
+	}
+	err = errors.
 		Do(chromeCmd.Start).
 		Do(func() error {
 			//TODO : Xvfb takes some time to allocate buffers in the beginning.
@@ -209,27 +214,13 @@ func (svc *service) Check(context.Context) error {
 }
 
 func (svc *service) MuteRecordingAudio(context.Context) error {
-	if svc.recorder.recordingAudioMuted {
-		return nil
-	}
 	const muteCmd = "pactl set-sink-mute @DEFAULT_SINK@ 1"
 	err := commander.Exec(muteCmd)
-	if err != nil {
-		errors.WithMessage(err, "error while muting recording audio")
-	}
-	svc.recorder.recordingAudioMuted = true
-	return nil
+	return errors.WithMessage(err, "error while muting recording audio")
 }
 
 func (svc *service) UnmuteRecordingAudio(context.Context) error {
-	if !svc.recorder.recordingAudioMuted {
-		return nil
-	}
 	const unmuteCmd = "pactl set-sink-mute @DEFAULT_SINK@ 0"
 	err := commander.Exec(unmuteCmd)
-	if err!= nil {
-		errors.WithMessage(err, "error while unmuting recording audio")
-	}
-	svc.recorder.recordingAudioMuted = false
-	return nil
+	return errors.WithMessage(err, "error while unmuting recording audio")
 }
