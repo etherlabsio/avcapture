@@ -114,7 +114,7 @@ func (svc *service) Start(ctx context.Context, req StartRecordingRequest) (resp 
 		chromeCmd = commander.New(args...)
 	}
 
-	err :=svc.UnmuteRecordingAudio(ctx)
+	err := svc.UnmuteRecordingAudio(ctx)
 	if err != nil {
 		resp.Err = errors.WithMessage(err, "error while unmuting the recorder audio")
 		return resp
