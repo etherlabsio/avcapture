@@ -11,7 +11,7 @@ require (
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/jfreymuth/pulse v0.0.0-20190407134806-02ba8f680d2d
 	github.com/oklog/run v1.0.0
-	github.com/peterbourgon/ff v1.6.0
+	github.com/peterbourgon/ff v1.7.0
 	github.com/pkg/errors v0.8.1 // indirect
 	golang.org/x/net v0.0.0-20190522155817-f3200d17e092 // indirect
 	golang.org/x/text v0.3.2 // indirect
