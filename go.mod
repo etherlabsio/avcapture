@@ -6,7 +6,7 @@ require (
 	github.com/etherlabsio/pkg v0.0.0-20190205140756-07224d073fd3
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/go-chi/cors v1.0.0
-	github.com/go-kit/kit v0.8.0
+	github.com/go-kit/kit v0.9.0
 	github.com/go-logfmt/logfmt v0.4.0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/jfreymuth/pulse v0.0.0-20190407134806-02ba8f680d2d
